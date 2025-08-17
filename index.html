@@ -104,6 +104,22 @@
             box-shadow: 0 0 30px rgba(255, 215, 0, 0.3);
         }
 
+        .disclaimer {
+            background: rgba(255, 215, 0, 0.1);
+            border: 2px solid var(--accent-yellow);
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 20px;
+            font-size: 0.6rem;
+            color: var(--cream);
+            text-align: center;
+            line-height: 1.4;
+        }
+
+        .disclaimer strong {
+            color: var(--accent-yellow);
+        }
+
         .form-group {
             margin-bottom: 20px;
         }
@@ -487,17 +503,22 @@
         </div>
         <h1 class="welcome-title">🎯 BINGO CALLER</h1>
         <div class="auth-form">
-            <div class="form-group">
-                <label for="playerName">Player Name:</label>
-                <input type="text" id="playerName" placeholder="Enter your name" required>
+            <div class="disclaimer">
+                <strong>📝 Project Disclaimer:</strong><br>
+                This is a <strong>dummy authentication form</strong> for demonstration purposes only.<br>
+                <strong>No data is collected or stored.</strong> You can continue with blank fields.
             </div>
             <div class="form-group">
-                <label for="playerEmail">Email Address:</label>
-                <input type="email" id="playerEmail" placeholder="Enter your email" required>
+                <label for="playerName">Player Name: (Optional)</label>
+                <input type="text" id="playerName" placeholder="Enter your name (optional)">
             </div>
             <div class="form-group">
-                <label for="playerPhone">Phone Number:</label>
-                <input type="tel" id="playerPhone" placeholder="Enter your phone" required>
+                <label for="playerEmail">Email Address: (Optional)</label>
+                <input type="email" id="playerEmail" placeholder="Enter your email (optional)">
+            </div>
+            <div class="form-group">
+                <label for="playerPhone">Phone Number: (Optional)</label>
+                <input type="tel" id="playerPhone" placeholder="Enter your phone (optional)">
             </div>
             <button class="play-button" onclick="startGame()">🎮 START GAME</button>
         </div>
@@ -637,11 +658,8 @@
             const email = document.getElementById('playerEmail').value;
             const phone = document.getElementById('playerPhone').value;
             
-            // Simple validation (dummy authentication)
-            if (!name || !email || !phone) {
-                alert('Please fill in all fields to start the game!');
-                return;
-            }
+            // No validation required - allow empty fields
+            // This is a dummy form for demonstration purposes
             
             // Hide welcome screen and show game
             document.getElementById('welcomeScreen').classList.add('hidden');
@@ -650,7 +668,7 @@
             // Initialize the game
             initializeGame();
             
-            // Start background music
+            // Start background music automatically
             isMusicPlaying = true;
             toggleMusic();
         }
@@ -916,6 +934,12 @@
 
         // Event listeners
         document.addEventListener('DOMContentLoaded', () => {
+            // Start background music automatically when page loads
+            setTimeout(() => {
+                isMusicPlaying = true;
+                toggleMusic();
+            }, 1000); // Start music after 1 second
+            
             // Game event listeners (only active after game starts)
             document.getElementById('callNextBtn').addEventListener('click', callNextNumber);
             document.getElementById('autoPlayBtn').addEventListener('click', toggleAutoPlay);
@@ -948,16 +972,16 @@
                 }
             });
 
-            // Enter key on form inputs
+            // Enter key on form inputs - allow Enter to start game from any field
             document.getElementById('playerName').addEventListener('keypress', (e) => {
                 if (e.key === 'Enter') {
-                    document.getElementById('playerEmail').focus();
+                    startGame();
                 }
             });
             
             document.getElementById('playerEmail').addEventListener('keypress', (e) => {
                 if (e.key === 'Enter') {
-                    document.getElementById('playerPhone').focus();
+                    startGame();
                 }
             });
             
