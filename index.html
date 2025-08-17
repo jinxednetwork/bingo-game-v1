@@ -1,0 +1,972 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🎯 BINGO CALLER</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
+        
+        :root {
+            --brand-red: #D3232A;
+            --brand-yellow: #FFC400;
+            --purple: #6C2AA7;
+            --lime: #31A24C;
+            --cream: #FFF4E0;
+            --dark: #1D1B20;
+            --background-red: #8B0000;
+            --accent-yellow: #FFD700;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Press Start 2P', monospace;
+            background: linear-gradient(135deg, var(--background-red) 0%, #660000 100%);
+            min-height: 100vh;
+            color: var(--cream);
+            overflow-x: hidden;
+        }
+
+        /* Pixel Art Background Pattern */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: 
+                radial-gradient(circle at 20% 20%, var(--accent-yellow) 2px, transparent 2px),
+                radial-gradient(circle at 80% 40%, var(--brand-yellow) 2px, transparent 2px),
+                radial-gradient(circle at 40% 80%, var(--accent-yellow) 2px, transparent 2px),
+                radial-gradient(circle at 90% 90%, var(--brand-yellow) 2px, transparent 2px);
+            background-size: 50px 50px, 60px 60px, 40px 40px, 70px 70px;
+            opacity: 0.15;
+            z-index: -1;
+        }
+
+        /* Welcome Screen */
+        .welcome-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, var(--background-red) 0%, #660000 100%);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 2000;
+            flex-direction: column;
+        }
+
+        .welcome-screen.hidden {
+            display: none;
+        }
+
+        .logo-container {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .logo {
+            max-width: 300px;
+            height: auto;
+            filter: drop-shadow(0 0 20px var(--accent-yellow));
+            animation: logoGlow 2s ease-in-out infinite alternate;
+        }
+
+        @keyframes logoGlow {
+            from { filter: drop-shadow(0 0 20px var(--accent-yellow)); }
+            to { filter: drop-shadow(0 0 30px var(--accent-yellow), 0 0 40px var(--brand-yellow)); }
+        }
+
+        .welcome-title {
+            font-size: 2rem;
+            color: var(--accent-yellow);
+            text-shadow: 3px 3px 0px var(--brand-red);
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .auth-form {
+            background: rgba(0, 0, 0, 0.7);
+            border: 3px solid var(--accent-yellow);
+            border-radius: 15px;
+            padding: 30px;
+            max-width: 400px;
+            width: 90%;
+            box-shadow: 0 0 30px rgba(255, 215, 0, 0.3);
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            color: var(--accent-yellow);
+            font-size: 0.8rem;
+            margin-bottom: 8px;
+            text-shadow: 1px 1px 0px var(--brand-red);
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 12px;
+            background: rgba(255, 255, 255, 0.9);
+            border: 2px solid var(--accent-yellow);
+            border-radius: 8px;
+            font-family: 'Press Start 2P', monospace;
+            font-size: 0.7rem;
+            color: var(--dark);
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: var(--brand-yellow);
+            box-shadow: 0 0 10px var(--accent-yellow);
+        }
+
+        .play-button {
+            width: 100%;
+            background: linear-gradient(145deg, var(--accent-yellow), var(--brand-yellow));
+            color: var(--dark);
+            border: 3px solid var(--brand-red);
+            padding: 15px;
+            font-family: 'Press Start 2P', monospace;
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            border-radius: 10px;
+            text-transform: uppercase;
+            box-shadow: 4px 4px 0px var(--brand-red);
+            transition: all 0.2s ease;
+        }
+
+        .play-button:hover {
+            transform: scale(1.05);
+            box-shadow: 0 6px 12px rgba(255, 215, 0, 0.5);
+        }
+
+        .play-button:active {
+            transform: scale(0.95);
+            box-shadow: 2px 2px 0px var(--brand-red);
+        }
+
+        /* Music Controls */
+        .music-controls {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1001;
+        }
+
+        .music-btn {
+            background: var(--accent-yellow);
+            color: var(--dark);
+            border: 2px solid var(--brand-red);
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            font-size: 1.2rem;
+            cursor: pointer;
+            box-shadow: 3px 3px 0px var(--brand-red);
+            transition: all 0.2s ease;
+        }
+
+        .music-btn:hover {
+            transform: scale(1.1);
+        }
+
+        /* Main Game Container */
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            animation: glow 2s ease-in-out infinite alternate;
+        }
+
+        @keyframes glow {
+            from { text-shadow: 0 0 10px var(--accent-yellow); }
+            to { text-shadow: 0 0 20px var(--accent-yellow), 0 0 30px var(--brand-yellow); }
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            color: var(--accent-yellow);
+            text-shadow: 3px 3px 0px var(--brand-red);
+        }
+
+        .main-display {
+            background: linear-gradient(145deg, var(--background-red), #660000);
+            border: 4px solid var(--accent-yellow);
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 
+                inset 0 0 20px rgba(255, 215, 0, 0.3),
+                0 10px 30px rgba(0, 0, 0, 0.5);
+        }
+
+        .current-number {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .number-ball {
+            display: inline-block;
+            width: 120px;
+            height: 120px;
+            background: linear-gradient(145deg, var(--accent-yellow), var(--brand-yellow));
+            border: 6px solid white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            font-weight: bold;
+            color: var(--dark);
+            text-shadow: 2px 2px 0px rgba(255,255,255,0.5);
+            box-shadow: 
+                inset -5px -5px 10px rgba(0,0,0,0.3),
+                0 8px 16px rgba(0,0,0,0.4);
+            animation: bounce 0.5s ease-out;
+            margin-bottom: 15px;
+        }
+
+        @keyframes bounce {
+            0% { transform: scale(0.3); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+
+        .number-label {
+            font-size: 1rem;
+            color: var(--cream);
+            margin-bottom: 10px;
+        }
+
+        .timer {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .timer-display {
+            font-size: 1.5rem;
+            color: var(--lime);
+            text-shadow: 0 0 10px var(--lime);
+        }
+
+        .controls {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .pixel-button {
+            background: var(--brand-red);
+            color: white;
+            border: 3px solid var(--dark);
+            padding: 12px 20px;
+            font-family: 'Press Start 2P', monospace;
+            font-size: 0.8rem;
+            cursor: pointer;
+            transition: all 0.1s ease;
+            text-transform: uppercase;
+            box-shadow: 3px 3px 0px var(--dark);
+        }
+
+        .pixel-button:hover {
+            transform: scale(1.05);
+            box-shadow: 0 4px 8px rgba(211,35,42,0.5);
+        }
+
+        .pixel-button:active {
+            transform: scale(0.95);
+            box-shadow: 1px 1px 0px var(--dark);
+        }
+
+        .pixel-button.primary {
+            background: var(--accent-yellow);
+            color: var(--dark);
+        }
+
+        .pixel-button.success {
+            background: var(--lime);
+            color: white;
+        }
+
+        .pixel-button.warning {
+            background: var(--purple);
+            color: white;
+        }
+
+        .bingo-button {
+            background: var(--lime);
+            color: white;
+            font-size: 1rem;
+            padding: 15px 30px;
+            border: 4px solid var(--dark);
+            box-shadow: 4px 4px 0px var(--dark);
+        }
+
+        .bingo-button:hover {
+            background: #28a745;
+            box-shadow: 0 6px 12px rgba(49, 162, 76, 0.5);
+        }
+
+        .history-section {
+            background: linear-gradient(145deg, var(--background-red), #660000);
+            border: 3px solid var(--purple);
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .history-title {
+            text-align: center;
+            font-size: 1.2rem;
+            color: var(--purple);
+            margin-bottom: 15px;
+            text-shadow: 0 0 10px var(--purple);
+        }
+
+        .called-numbers {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+            gap: 8px;
+            max-height: 200px;
+            overflow-y: auto;
+            padding: 10px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 8px;
+        }
+
+        .called-number {
+            background: linear-gradient(145deg, var(--accent-yellow), var(--brand-yellow));
+            color: var(--dark);
+            padding: 8px;
+            text-align: center;
+            border-radius: 50%;
+            font-size: 0.7rem;
+            font-weight: bold;
+            border: 2px solid white;
+            box-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .stat-card {
+            background: linear-gradient(145deg, var(--background-red), #660000);
+            border: 2px solid var(--accent-yellow);
+            border-radius: 8px;
+            padding: 15px;
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 1.5rem;
+            color: var(--accent-yellow);
+            margin-bottom: 5px;
+        }
+
+        .stat-label {
+            font-size: 0.6rem;
+            color: var(--cream);
+        }
+
+        .celebration {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .celebration-content {
+            text-align: center;
+            animation: celebrationPulse 1s ease-in-out infinite;
+        }
+
+        @keyframes celebrationPulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+
+        .celebration h2 {
+            font-size: 3rem;
+            color: var(--lime);
+            text-shadow: 0 0 20px var(--lime);
+            margin-bottom: 20px;
+        }
+
+        .celebration p {
+            font-size: 1.2rem;
+            color: var(--cream);
+            margin-bottom: 20px;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 600px) {
+            .welcome-title {
+                font-size: 1.5rem;
+            }
+            
+            .logo {
+                max-width: 250px;
+            }
+            
+            .header h1 {
+                font-size: 1.8rem;
+            }
+            
+            .number-ball {
+                width: 100px;
+                height: 100px;
+                font-size: 1.5rem;
+            }
+            
+            .controls {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .pixel-button {
+                width: 200px;
+            }
+        }
+
+        /* Scrollbar Styling */
+        .called-numbers::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .called-numbers::-webkit-scrollbar-track {
+            background: var(--dark);
+            border-radius: 4px;
+        }
+
+        .called-numbers::-webkit-scrollbar-thumb {
+            background: var(--brand-red);
+            border-radius: 4px;
+        }
+
+        .called-numbers::-webkit-scrollbar-thumb:hover {
+            background: var(--accent-yellow);
+        }
+    </style>
+</head>
+<body>
+    <!-- Welcome Screen -->
+    <div class="welcome-screen" id="welcomeScreen">
+        <div class="logo-container">
+            <img src="Bingo! Logo.png" alt="Bingo Logo" class="logo">
+        </div>
+        <h1 class="welcome-title">🎯 BINGO CALLER</h1>
+        <div class="auth-form">
+            <div class="form-group">
+                <label for="playerName">Player Name:</label>
+                <input type="text" id="playerName" placeholder="Enter your name" required>
+            </div>
+            <div class="form-group">
+                <label for="playerEmail">Email Address:</label>
+                <input type="email" id="playerEmail" placeholder="Enter your email" required>
+            </div>
+            <div class="form-group">
+                <label for="playerPhone">Phone Number:</label>
+                <input type="tel" id="playerPhone" placeholder="Enter your phone" required>
+            </div>
+            <button class="play-button" onclick="startGame()">🎮 START GAME</button>
+        </div>
+    </div>
+
+    <!-- Music Controls -->
+    <div class="music-controls">
+        <button class="music-btn" id="musicBtn" onclick="toggleMusic()">🎵</button>
+    </div>
+
+    <!-- Main Game -->
+    <div class="container" id="gameContainer" style="display: none;">
+        <div class="header">
+            <h1>🎯 BINGO CALLER</h1>
+        </div>
+
+        <div class="main-display">
+            <div class="current-number">
+                <div class="number-label">Current Number</div>
+                <div class="number-ball" id="currentNumber">--</div>
+            </div>
+
+            <div class="timer">
+                <div class="timer-display" id="timer">⏱️ Next in: 7 seconds</div>
+            </div>
+
+            <div class="controls">
+                <button class="pixel-button primary" id="callNextBtn">🎲 Call Next</button>
+                <button class="pixel-button warning" id="autoPlayBtn">▶️ Auto-Play</button>
+                <button class="pixel-button" id="muteBtn">🔊 Mute</button>
+                <button class="pixel-button" id="shuffleBtn">🔀 Shuffle</button>
+            </div>
+
+            <div style="text-align: center;">
+                <button class="pixel-button bingo-button" id="bingoBtn">🏆 BINGO!</button>
+            </div>
+        </div>
+
+        <div class="history-section">
+            <div class="history-title">📋 Called Numbers</div>
+            <div class="called-numbers" id="calledNumbers">
+                <!-- Called numbers will be displayed here -->
+            </div>
+        </div>
+
+        <div class="stats">
+            <div class="stat-card">
+                <div class="stat-value" id="numbersCalled">0</div>
+                <div class="stat-label">Numbers Called</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="numbersRemaining">75</div>
+                <div class="stat-label">Numbers Remaining</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="gameTime">00:00</div>
+                <div class="stat-label">Game Time</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="celebration" id="celebration">
+        <div class="celebration-content">
+            <h2>🎉 BINGO!</h2>
+            <p>We have a winner!</p>
+            <button class="pixel-button primary" onclick="closeCelebration()">New Game</button>
+        </div>
+    </div>
+
+    <!-- 8-bit Background Music -->
+    <audio id="bgMusic" loop>
+        <source src="data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmwhBSuBzvLZiTYIG2m98OScTgwOUarm7blmGgU7k9n1unEiBC13yO/eizEIHWq+8+OWT" type="audio/wav">
+    </audio>
+
+    <script>
+        // Game state
+        let numberPool = [];
+        let calledNumbers = [];
+        let currentNumber = null;
+        let timer = null;
+        let countdown = 7;
+        let autoPlay = false;
+        let isMuted = false;
+        let gameStartTime = null;
+        let gameTimer = null;
+        let isMusicPlaying = false;
+        let bgMusic = null;
+
+        // Initialize background music
+        function initBackgroundMusic() {
+            bgMusic = document.getElementById('bgMusic');
+            
+            // Create 8-bit style music using Web Audio API
+            const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            const oscillator = audioContext.createOscillator();
+            const gainNode = audioContext.createGain();
+            
+            oscillator.connect(gainNode);
+            gainNode.connect(audioContext.destination);
+            
+            // Simple 8-bit melody
+            const notes = [262, 330, 392, 523, 392, 330, 262, 196];
+            let noteIndex = 0;
+            
+            function playNote() {
+                if (!isMusicPlaying) return;
+                
+                oscillator.frequency.setValueAtTime(notes[noteIndex], audioContext.currentTime);
+                gainNode.gain.setValueAtTime(0.1, audioContext.currentTime);
+                gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.5);
+                
+                noteIndex = (noteIndex + 1) % notes.length;
+                
+                setTimeout(playNote, 1000);
+            }
+            
+            oscillator.start();
+            playNote();
+        }
+
+        // Toggle background music
+        function toggleMusic() {
+            isMusicPlaying = !isMusicPlaying;
+            const btn = document.getElementById('musicBtn');
+            
+            if (isMusicPlaying) {
+                btn.textContent = '🔇';
+                initBackgroundMusic();
+            } else {
+                btn.textContent = '🎵';
+            }
+        }
+
+        // Start game function
+        function startGame() {
+            const name = document.getElementById('playerName').value;
+            const email = document.getElementById('playerEmail').value;
+            const phone = document.getElementById('playerPhone').value;
+            
+            // Simple validation (dummy authentication)
+            if (!name || !email || !phone) {
+                alert('Please fill in all fields to start the game!');
+                return;
+            }
+            
+            // Hide welcome screen and show game
+            document.getElementById('welcomeScreen').classList.add('hidden');
+            document.getElementById('gameContainer').style.display = 'block';
+            
+            // Initialize the game
+            initializeGame();
+            
+            // Start background music
+            isMusicPlaying = true;
+            toggleMusic();
+        }
+
+        // Initialize the game
+        function initializeGame() {
+            // Create number pool (1-75)
+            numberPool = Array.from({length: 75}, (_, i) => i + 1);
+            calledNumbers = [];
+            currentNumber = null;
+            countdown = 7;
+            autoPlay = false;
+            gameStartTime = Date.now();
+            
+            updateDisplay();
+            updateStats();
+            startGameTimer();
+            
+            // Initialize speech synthesis
+            if ('speechSynthesis' in window) {
+                speechSynthesis.cancel();
+            }
+        }
+
+        // Get letter prefix for bingo number
+        function getLetterPrefix(num) {
+            if (num <= 15) return 'B';
+            if (num <= 30) return 'I';
+            if (num <= 45) return 'N';
+            if (num <= 60) return 'G';
+            return 'O';
+        }
+
+        // Call next number
+        function callNextNumber() {
+            if (numberPool.length === 0) {
+                alert('All numbers have been called!');
+                return;
+            }
+
+            // Pick random number from pool
+            const randomIndex = Math.floor(Math.random() * numberPool.length);
+            currentNumber = numberPool.splice(randomIndex, 1)[0];
+            calledNumbers.push(currentNumber);
+
+            // Update display
+            updateDisplay();
+            updateStats();
+
+            // Speak the number
+            if (!isMuted) {
+                speakNumber(currentNumber);
+            }
+
+            // Play sound effect
+            playSound('pop');
+
+            // Reset countdown
+            countdown = 7;
+            updateTimer();
+
+            // Auto-play next number after 7 seconds
+            if (autoPlay) {
+                clearTimeout(timer);
+                timer = setTimeout(callNextNumber, 7000);
+            }
+        }
+
+        // Speak number using Web Speech API
+        function speakNumber(number) {
+            if ('speechSynthesis' in window) {
+                const utterance = new SpeechSynthesisUtterance(
+                    `${getLetterPrefix(number)} ${number}`
+                );
+                utterance.rate = 0.8;
+                utterance.volume = 1;
+                utterance.pitch = 1.2;
+                speechSynthesis.speak(utterance);
+            }
+        }
+
+        // Play sound effects
+        function playSound(type) {
+            if (isMuted) return;
+
+            const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            const oscillator = audioContext.createOscillator();
+            const gainNode = audioContext.createGain();
+
+            oscillator.connect(gainNode);
+            gainNode.connect(audioContext.destination);
+
+            if (type === 'pop') {
+                oscillator.frequency.setValueAtTime(800, audioContext.currentTime);
+                oscillator.frequency.exponentialRampToValueAtTime(200, audioContext.currentTime + 0.1);
+                gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+                gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.1);
+                oscillator.start(audioContext.currentTime);
+                oscillator.stop(audioContext.currentTime + 0.1);
+            } else if (type === 'ding') {
+                oscillator.frequency.setValueAtTime(1000, audioContext.currentTime);
+                gainNode.gain.setValueAtTime(0.2, audioContext.currentTime);
+                gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.2);
+                oscillator.start(audioContext.currentTime);
+                oscillator.stop(audioContext.currentTime + 0.2);
+            }
+        }
+
+        // Update display
+        function updateDisplay() {
+            const currentNumberEl = document.getElementById('currentNumber');
+            const calledNumbersEl = document.getElementById('calledNumbers');
+
+            if (currentNumber) {
+                currentNumberEl.textContent = `${getLetterPrefix(currentNumber)}-${currentNumber}`;
+            } else {
+                currentNumberEl.textContent = '--';
+            }
+
+            // Update called numbers history
+            calledNumbersEl.innerHTML = '';
+            calledNumbers.forEach(num => {
+                const numEl = document.createElement('div');
+                numEl.className = 'called-number';
+                numEl.textContent = `${getLetterPrefix(num)}-${num}`;
+                calledNumbersEl.appendChild(numEl);
+            });
+        }
+
+        // Update statistics
+        function updateStats() {
+            document.getElementById('numbersCalled').textContent = calledNumbers.length;
+            document.getElementById('numbersRemaining').textContent = numberPool.length;
+        }
+
+        // Update timer display
+        function updateTimer() {
+            const timerEl = document.getElementById('timer');
+            if (autoPlay && countdown > 0) {
+                timerEl.textContent = `⏱️ Next in: ${countdown} seconds`;
+                timerEl.style.color = countdown <= 3 ? '#ff6b6b' : 'var(--lime)';
+            } else if (autoPlay) {
+                timerEl.textContent = '⏱️ Calling next number...';
+            } else {
+                timerEl.textContent = '⏱️ Manual mode - click "Call Next"';
+            }
+        }
+
+        // Start countdown timer
+        function startCountdown() {
+            if (!autoPlay) return;
+
+            const countdownInterval = setInterval(() => {
+                countdown--;
+                updateTimer();
+
+                if (countdown <= 3 && countdown > 0) {
+                    playSound('ding');
+                }
+
+                if (countdown <= 0) {
+                    clearInterval(countdownInterval);
+                    callNextNumber();
+                }
+            }, 1000);
+        }
+
+        // Start game timer
+        function startGameTimer() {
+            gameTimer = setInterval(() => {
+                const elapsed = Date.now() - gameStartTime;
+                const minutes = Math.floor(elapsed / 60000);
+                const seconds = Math.floor((elapsed % 60000) / 1000);
+                document.getElementById('gameTime').textContent = 
+                    `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+            }, 1000);
+        }
+
+        // Toggle auto-play
+        function toggleAutoPlay() {
+            autoPlay = !autoPlay;
+            const btn = document.getElementById('autoPlayBtn');
+            
+            if (autoPlay) {
+                btn.textContent = '⏸️ Pause';
+                btn.classList.remove('warning');
+                btn.classList.add('success');
+                startCountdown();
+            } else {
+                btn.textContent = '▶️ Auto-Play';
+                btn.classList.remove('success');
+                btn.classList.add('warning');
+                clearTimeout(timer);
+            }
+        }
+
+        // Toggle mute
+        function toggleMute() {
+            isMuted = !isMuted;
+            const btn = document.getElementById('muteBtn');
+            
+            if (isMuted) {
+                btn.textContent = '🔇 Unmute';
+                speechSynthesis.cancel();
+            } else {
+                btn.textContent = '🔊 Mute';
+            }
+        }
+
+        // Shuffle remaining numbers
+        function shuffleNumbers() {
+            for (let i = numberPool.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [numberPool[i], numberPool[j]] = [numberPool[j], numberPool[i]];
+            }
+            playSound('pop');
+        }
+
+        // Celebrate bingo
+        function celebrateBingo() {
+            document.getElementById('celebration').style.display = 'flex';
+            playSound('ding');
+            
+            // Create confetti effect
+            createConfetti();
+        }
+
+        // Create confetti animation
+        function createConfetti() {
+            for (let i = 0; i < 50; i++) {
+                setTimeout(() => {
+                    const confetti = document.createElement('div');
+                    confetti.style.position = 'fixed';
+                    confetti.style.left = Math.random() * 100 + 'vw';
+                    confetti.style.top = '-10px';
+                    confetti.style.width = '10px';
+                    confetti.style.height = '10px';
+                    confetti.style.background = ['var(--brand-red)', 'var(--accent-yellow)', 'var(--purple)', 'var(--lime)'][Math.floor(Math.random() * 4)];
+                    confetti.style.borderRadius = '50%';
+                    confetti.style.pointerEvents = 'none';
+                    confetti.style.zIndex = '999';
+                    
+                    document.body.appendChild(confetti);
+                    
+                    const animation = confetti.animate([
+                        { transform: 'translateY(0px) rotate(0deg)', opacity: 1 },
+                        { transform: `translateY(${window.innerHeight + 100}px) rotate(${Math.random() * 360}deg)`, opacity: 0 }
+                    ], {
+                        duration: 3000 + Math.random() * 2000,
+                        easing: 'cubic-bezier(0.25, 0.46, 0.45, 0.94)'
+                    });
+                    
+                    animation.onfinish = () => confetti.remove();
+                }, i * 100);
+            }
+        }
+
+        // Close celebration
+        function closeCelebration() {
+            document.getElementById('celebration').style.display = 'none';
+            initializeGame();
+        }
+
+        // Event listeners
+        document.addEventListener('DOMContentLoaded', () => {
+            // Game event listeners (only active after game starts)
+            document.getElementById('callNextBtn').addEventListener('click', callNextNumber);
+            document.getElementById('autoPlayBtn').addEventListener('click', toggleAutoPlay);
+            document.getElementById('muteBtn').addEventListener('click', toggleMute);
+            document.getElementById('shuffleBtn').addEventListener('click', shuffleNumbers);
+            document.getElementById('bingoBtn').addEventListener('click', celebrateBingo);
+
+            // Keyboard shortcuts
+            document.addEventListener('keydown', (e) => {
+                // Only work if game is active
+                if (document.getElementById('gameContainer').style.display !== 'none') {
+                    switch(e.code) {
+                        case 'Space':
+                            e.preventDefault();
+                            callNextNumber();
+                            break;
+                        case 'KeyA':
+                            e.preventDefault();
+                            toggleAutoPlay();
+                            break;
+                        case 'KeyM':
+                            e.preventDefault();
+                            toggleMute();
+                            break;
+                        case 'KeyB':
+                            e.preventDefault();
+                            celebrateBingo();
+                            break;
+                    }
+                }
+            });
+
+            // Enter key on form inputs
+            document.getElementById('playerName').addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    document.getElementById('playerEmail').focus();
+                }
+            });
+            
+            document.getElementById('playerEmail').addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    document.getElementById('playerPhone').focus();
+                }
+            });
+            
+            document.getElementById('playerPhone').addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    startGame();
+                }
+            });
+        });
+    </script>
+</body>
+</html> 
